@@ -5,8 +5,8 @@ to Zestimate scrutiny: transparent comps, adjustment grids, and a confidence ban
 
 ## Status
 
-Stage 1 — scaffold. Server boots, `health_check` tool registered. Valuation tooling lands in
-later stages.
+Stage 2 — domain types. `models.py` holds pydantic types (address, property facts, comps,
+adjustment grid, confidence band, valuation). Valuation tooling lands in later stages.
 
 ## Install
 
