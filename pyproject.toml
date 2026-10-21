@@ -1,0 +1,41 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "zillow-proof-avm-mcp"
+version = "0.1.0"
+description = "Zillow-Proof AVM MCP: agent-callable automated valuation model with defensible, Zestimate-beating comps"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "pydantic>=2.5.0",
+    "mcp>=1.0.0",
+    "click>=8.1.0",
+    "httpx>=0.24.0",
+]
+
+[project.scripts]
+zillow-proof-avm = "zillow_proof_avm_mcp.cli:cli"
+zillow-proof-avm-mcp = "zillow_proof_avm_mcp.cli:cli"
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4.0",
+    "pytest-asyncio>=0.21.0",
+    "ruff>=0.1.0",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+ignore = ["E501"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
