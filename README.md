@@ -5,8 +5,9 @@ to Zestimate scrutiny: transparent comps, adjustment grids, and a confidence ban
 
 ## Status
 
-Stage 2 — domain types. `models.py` holds pydantic types (address, property facts, comps,
-adjustment grid, confidence band, valuation). Valuation tooling lands in later stages.
+Stage 3 — core logic. `models.py` holds the domain types; `valuation.py` is the sales-comparison
+engine: comp filtering, line-item adjustment grid, proximity/recency weighting, and a
+dispersion-driven confidence band. MCP tools land in later stages.
 
 ## Install
 
