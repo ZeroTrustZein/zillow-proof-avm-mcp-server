@@ -5,9 +5,11 @@ to Zestimate scrutiny: transparent comps, adjustment grids, and a confidence ban
 
 ## Status
 
-Stage 3 — core logic. `models.py` holds the domain types; `valuation.py` is the sales-comparison
-engine: comp filtering, line-item adjustment grid, proximity/recency weighting, and a
-dispersion-driven confidence band. MCP tools land in later stages.
+Stage 4 — subsystems. `geo.py` derives great-circle comp distance from coordinates;
+`sources.py` is the comp-access layer (`CompSource` protocol, in-memory and JSON-file
+sources, distance back-filled from lat/lon when a record omits it). `valuation.py` is the
+sales-comparison engine: comp filtering, line-item adjustment grid, proximity/recency
+weighting, and a dispersion-driven confidence band. MCP tools land in later stages.
 
 ## Install
 

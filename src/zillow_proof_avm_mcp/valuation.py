@@ -8,7 +8,7 @@ comp count, and proximity. No black boxes.
 from __future__ import annotations
 
 import math
-from datetime import date
+from datetime import date, datetime, timezone
 
 from .models import (
     AdjustedComp,
@@ -30,6 +30,10 @@ MAX_YEAR_DIFF = 30
 GLA_RATE_FACTOR = 0.5
 # Comps older than this many days get no weight (half-life decay).
 RECENCY_HALF_LIFE_DAYS = 90.0
+
+
+def _today() -> date:
+    return datetime.now(timezone.utc).date()
 
 
 def _gla_rate(comp: Comp) -> float:
@@ -110,7 +114,7 @@ def select_comps(
     today: date | None = None,
 ) -> list[Comp]:
     """Keep proximate, recent, same-type comps; closest and newest first."""
-    today = today or date.today()
+    today = today or _today()
     kept = [
         c
         for c in comps
@@ -124,7 +128,7 @@ def select_comps(
 
 def comp_weight(comp: Comp, today: date | None = None) -> float:
     """Weight by proximity and recency; closer and newer comps dominate."""
-    today = today or date.today()
+    today = today or _today()
     age_days = max((today - comp.sale_date).days, 0)
     recency = 0.5 ** (age_days / RECENCY_HALF_LIFE_DAYS)
     proximity = 1.0 / (1.0 + comp.distance_miles)
@@ -180,7 +184,7 @@ def value_property(
     today: date | None = None,
 ) -> Valuation:
     """Full defensible valuation from raw comps."""
-    today = today or date.today()
+    today = today or _today()
     selected = select_comps(
         comps,
         subject,
