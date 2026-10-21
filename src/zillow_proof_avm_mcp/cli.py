@@ -10,7 +10,13 @@ from .config import Config
 from .models import Address, PropertyFacts, PropertyType, SubjectProperty, Valuation
 from .server import mcp
 from .sources import source_from_config
-from .valuation import value_property
+from .valuation import (
+    DEFAULT_LIMIT,
+    DEFAULT_MAX_AGE_DAYS,
+    DEFAULT_MAX_DISTANCE_MILES,
+    DEFAULT_MIN_COMPS,
+    value_property,
+)
 
 
 @click.group()
@@ -66,10 +72,10 @@ def serve() -> None:
     default=None,
     help="Comps JSON file (defaults to ZPAVM_COMPS_FILE).",
 )
-@click.option("--max-distance", type=float, default=2.0, show_default=True)
-@click.option("--max-age-days", type=int, default=180, show_default=True)
-@click.option("--min-comps", type=int, default=3, show_default=True)
-@click.option("--limit", type=int, default=8, show_default=True)
+@click.option("--max-distance", type=float, default=DEFAULT_MAX_DISTANCE_MILES, show_default=True)
+@click.option("--max-age-days", type=int, default=DEFAULT_MAX_AGE_DAYS, show_default=True)
+@click.option("--min-comps", type=int, default=DEFAULT_MIN_COMPS, show_default=True)
+@click.option("--limit", type=int, default=DEFAULT_LIMIT, show_default=True)
 @click.option("--json", "as_json", is_flag=True, help="Emit the full valuation as JSON.")
 def valuate(
     street: str,

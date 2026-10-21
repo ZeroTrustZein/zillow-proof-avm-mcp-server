@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import date, datetime
+from datetime import date, datetime, timezone
 from enum import Enum
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
@@ -123,7 +123,7 @@ class Valuation(BaseModel):
     comps: list[AdjustedComp] = Field(min_length=1)
     band: ConfidenceBand
     methodology: str
-    created_at: datetime = Field(default_factory=datetime.now)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
     @property
     def price_per_sqft(self) -> float:

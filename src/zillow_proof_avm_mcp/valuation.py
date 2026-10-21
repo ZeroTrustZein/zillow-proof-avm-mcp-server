@@ -28,8 +28,14 @@ LOT_RATE_PER_1K_SQFT = 0.010
 MAX_YEAR_DIFF = 30
 # GLA is worth roughly half the market $/sqft; full $/sqft double-counts land and improvements.
 GLA_RATE_FACTOR = 0.5
-# Comps older than this many days get no weight (half-life decay).
+# Recency weight halves every this many days; weight approaches, never reaches, zero.
 RECENCY_HALF_LIFE_DAYS = 90.0
+
+# Comp-selection defaults. The CLI imports these so its flags cannot drift from the engine.
+DEFAULT_MAX_DISTANCE_MILES = 2.0
+DEFAULT_MAX_AGE_DAYS = 180
+DEFAULT_MIN_COMPS = 3
+DEFAULT_LIMIT = 8
 
 
 def _today() -> date:
@@ -56,25 +62,19 @@ def adjust_comp(subject: PropertyFacts, comp: Comp) -> AdjustedComp:
             )
         )
 
-    beds_diff = subject.beds - comp.facts.beds
-    if beds_diff:
-        lines.append(
-            Adjustment(
-                field="beds",
-                amount=round(beds_diff * price * BED_RATE, 2),
-                reason=f"{beds_diff:+g} bed @ {BED_RATE:.1%} of price",
+    # Beds and baths share one formula: a fraction of price per unit of difference.
+    for field, diff, rate, label in (
+        ("beds", subject.beds - comp.facts.beds, BED_RATE, "bed"),
+        ("baths", subject.baths - comp.facts.baths, BATH_RATE, "bath"),
+    ):
+        if diff:
+            lines.append(
+                Adjustment(
+                    field=field,
+                    amount=round(diff * price * rate, 2),
+                    reason=f"{diff:+g} {label} @ {rate:.1%} of price",
+                )
             )
-        )
-
-    baths_diff = subject.baths - comp.facts.baths
-    if baths_diff:
-        lines.append(
-            Adjustment(
-                field="baths",
-                amount=round(baths_diff * price * BATH_RATE, 2),
-                reason=f"{baths_diff:+g} bath @ {BATH_RATE:.1%} of price",
-            )
-        )
 
     if subject.lot_sqft and comp.facts.lot_sqft:
         lot_diff = subject.lot_sqft - comp.facts.lot_sqft
@@ -108,9 +108,9 @@ def select_comps(
     comps: list[Comp],
     subject: SubjectProperty,
     *,
-    max_distance_miles: float = 2.0,
-    max_age_days: int = 180,
-    limit: int = 8,
+    max_distance_miles: float = DEFAULT_MAX_DISTANCE_MILES,
+    max_age_days: int = DEFAULT_MAX_AGE_DAYS,
+    limit: int = DEFAULT_LIMIT,
     today: date | None = None,
 ) -> list[Comp]:
     """Keep proximate, recent, same-type comps; closest and newest first."""
@@ -177,10 +177,10 @@ def value_property(
     subject: SubjectProperty,
     comps: list[Comp],
     *,
-    max_distance_miles: float = 2.0,
-    max_age_days: int = 180,
-    min_comps: int = 3,
-    limit: int = 8,
+    max_distance_miles: float = DEFAULT_MAX_DISTANCE_MILES,
+    max_age_days: int = DEFAULT_MAX_AGE_DAYS,
+    min_comps: int = DEFAULT_MIN_COMPS,
+    limit: int = DEFAULT_LIMIT,
     today: date | None = None,
 ) -> Valuation:
     """Full defensible valuation from raw comps."""
