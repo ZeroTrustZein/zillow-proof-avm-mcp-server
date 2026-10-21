@@ -46,6 +46,18 @@ def test_miles_between_missing_coords():
     assert miles_between(bare, bare) is None
 
 
+def test_miles_between_partial_coords():
+    located = PropertyFacts(beds=3, baths=2, sqft=1800, latitude=30.2672, longitude=-97.7431)
+    half = PropertyFacts(beds=3, baths=2, sqft=1800, latitude=30.2672)
+    assert miles_between(located, half) is None
+
+
+def test_haversine_is_symmetric():
+    a = haversine_miles(30.2672, -97.7431, 32.7767, -96.7970)
+    b = haversine_miles(32.7767, -96.7970, 30.2672, -97.7431)
+    assert a == pytest.approx(b)
+
+
 def test_comp_from_record_derives_distance():
     comp = comp_from_record(SubjectProperty(**SUBJECT), _record())
     assert comp.distance_miles > 0

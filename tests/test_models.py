@@ -52,6 +52,33 @@ def test_facts_reject_unknown_field():
         PropertyFacts(beds=3, baths=2, sqft=2000, pool=True)
 
 
+def test_address_rejects_unknown_field():
+    with pytest.raises(ValidationError):
+        Address(street="1 Main St", city="Austin", state="TX", zip="78701", county="Travis")
+
+
+def test_facts_reject_out_of_range_coordinates():
+    with pytest.raises(ValidationError):
+        PropertyFacts(beds=3, baths=2, sqft=2000, latitude=91.0)
+    with pytest.raises(ValidationError):
+        PropertyFacts(beds=3, baths=2, sqft=2000, longitude=-181.0)
+
+
+def test_facts_reject_out_of_range_year_built():
+    with pytest.raises(ValidationError):
+        PropertyFacts(beds=3, baths=2, sqft=2000, year_built=1699)
+
+
+def test_adjusted_comp_sums_adjustments():
+    lines = [
+        Adjustment(field="sqft", amount=-5_000, reason="-200 sqft"),
+        Adjustment(field="beds", amount=2_000, reason="+1 bed"),
+    ]
+    c = AdjustedComp(**_comp().model_dump(), adjustments=lines)
+    assert c.net_adjustment == -3_000
+    assert c.adjusted_price == 397_000
+
+
 def test_adjusted_comp_math():
     a = Adjustment(field="sqft", amount=-5_000, reason="-200 sqft @ $25")
     c = AdjustedComp(**_comp().model_dump(), adjustments=[a])

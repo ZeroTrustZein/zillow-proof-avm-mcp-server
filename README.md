@@ -5,10 +5,8 @@ to Zestimate scrutiny: transparent comps, adjustment grids, and a confidence ban
 
 ## Status
 
-Stage 5 — CLI/interface. `valuate` runs the whole pipeline from the shell: subject flags
-plus a comps JSON file (or `ZPAVM_COMPS_FILE`), human summary by default, `--json` for the
-full `Valuation`. `geo.py`, `sources.py`, and `valuation.py` are unchanged from stage 4.
-MCP tools land in later stages.
+Stage 6 — tests. 60 tests across models, geo, sources, engine, CLI, config, and server;
+coverage 99% of `src/`. CI runs `ruff check .` plus `pytest --cov`.
 
 ## Install
 
@@ -33,5 +31,5 @@ Copy `.env.example` to `.env`. Transport defaults to stdio; set `ZPAVM_TRANSPORT
 ## Test
 
 ```bash
-pytest -q && ruff check .
+pytest -q --cov=zillow_proof_avm_mcp --cov-report=term-missing && ruff check .
 ```

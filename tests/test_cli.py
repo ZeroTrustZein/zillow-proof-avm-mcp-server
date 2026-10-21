@@ -1,8 +1,11 @@
 import json
 from datetime import date, timedelta
+from types import SimpleNamespace
 
 from click.testing import CliRunner
 
+import zillow_proof_avm_mcp.cli as cli_mod
+from zillow_proof_avm_mcp import __version__
 from zillow_proof_avm_mcp.cli import cli
 
 
@@ -68,3 +71,49 @@ def test_valuate_without_comp_source():
     )
     assert result.exit_code == 1
     assert "no comp source" in result.output
+
+
+def test_valuate_reads_comps_file_from_env(tmp_path):
+    result = CliRunner().invoke(
+        cli,
+        ["valuate", *SUBJECT_ARGS, "--json"],
+        env={"ZPAVM_COMPS_FILE": str(_comps_file(tmp_path))},
+    )
+    assert result.exit_code == 0, result.output
+    assert json.loads(result.output)["band"]["point"] > 0
+
+
+def test_version():
+    result = CliRunner().invoke(cli, ["version"])
+    assert result.exit_code == 0
+    assert result.output.strip() == __version__
+
+
+def test_tools_lists_registered_tools():
+    result = CliRunner().invoke(cli, ["tools"])
+    assert result.exit_code == 0, result.output
+    assert "health_check" in result.output
+
+
+def test_serve_stdio_passes_no_transport(monkeypatch):
+    calls = []
+    monkeypatch.setattr(cli_mod, "mcp", SimpleNamespace(run=lambda **kw: calls.append(kw)))
+
+    result = CliRunner().invoke(cli, ["serve"], env={"ZPAVM_TRANSPORT": "stdio"})
+
+    assert result.exit_code == 0, result.output
+    assert calls == [{}]
+
+
+def test_serve_sse_uses_config_host_and_port(monkeypatch):
+    calls = []
+    monkeypatch.setattr(cli_mod, "mcp", SimpleNamespace(run=lambda **kw: calls.append(kw)))
+
+    result = CliRunner().invoke(
+        cli,
+        ["serve"],
+        env={"ZPAVM_TRANSPORT": "sse", "ZPAVM_HOST": "0.0.0.0", "ZPAVM_PORT": "9999"},
+    )
+
+    assert result.exit_code == 0, result.output
+    assert calls == [{"transport": "sse", "host": "0.0.0.0", "port": 9999}]

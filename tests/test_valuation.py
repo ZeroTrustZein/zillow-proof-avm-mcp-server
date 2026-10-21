@@ -31,6 +31,7 @@ def _comp(
     ptype=PropertyType.SINGLE_FAMILY,
     beds=3,
     baths=2,
+    year_built=2000,
 ):
     return Comp(
         address=ADDR,
@@ -39,7 +40,7 @@ def _comp(
             baths=baths,
             sqft=sqft,
             lot_sqft=6000,
-            year_built=2000,
+            year_built=year_built,
             property_type=ptype,
         ),
         sale_price=price,
@@ -130,3 +131,55 @@ def test_value_property_end_to_end():
 def test_value_property_raises_when_too_few_comps():
     with pytest.raises(ValueError, match="need at least 3"):
         value_property(SUBJECT, [_comp()], today=TODAY)
+
+
+def test_year_adjustment_is_capped():
+    line = next(
+        a for a in adjust_comp(SUBJECT_FACTS, _comp(year_built=1950)).adjustments
+        if a.field == "year_built"
+    )
+    assert line.amount == pytest.approx(30 * 400_000 * 0.003, rel=1e-6)
+    assert line.reason.endswith("capped at 30 yr)")
+
+
+def test_lot_adjustment_skipped_without_subject_lot():
+    facts = SUBJECT_FACTS.model_copy(update={"lot_sqft": None})
+    adjusted = adjust_comp(facts, _comp())
+    assert all(a.field != "lot_sqft" for a in adjusted.adjustments)
+
+
+def test_lot_adjustment_scales_per_thousand_sqft():
+    adjusted = adjust_comp(SUBJECT_FACTS, _comp())
+    assert adjusted.adjustments == []
+    bigger = SUBJECT_FACTS.model_copy(update={"lot_sqft": 8000})
+    line = adjust_comp(bigger, _comp()).adjustments[0]
+    assert line.field == "lot_sqft"
+    assert line.amount == pytest.approx(2 * 400_000 * 0.010, rel=1e-6)
+
+
+def test_reconcile_rejects_comps_with_no_weight():
+    stale = adjust_comp(SUBJECT_FACTS, _comp(days_ago=200_000))  # recency term underflows to 0
+    with pytest.raises(ValueError, match="zero weight"):
+        reconcile([stale], TODAY)
+
+
+def test_band_width_has_three_percent_floor():
+    band = reconcile([adjust_comp(SUBJECT_FACTS, _comp(price=p)) for p in (400_000, 400_000)], TODAY)
+    assert band.spread_pct == pytest.approx(0.06, abs=1e-3)
+
+
+def test_confidence_stays_within_bounds():
+    tight = reconcile([adjust_comp(SUBJECT_FACTS, _comp(price=400_000)) for _ in range(10)], TODAY)
+    wild = reconcile(
+        [adjust_comp(SUBJECT_FACTS, _comp(price=p)) for p in (100_000, 700_000)], TODAY
+    )
+    assert 0.05 <= wild.confidence <= tight.confidence <= 0.95
+
+
+def test_select_comps_thresholds_are_overridable():
+    comps = [_comp(distance=3.0, days_ago=200)]
+    assert select_comps(comps, SUBJECT, today=TODAY) == []
+    kept = select_comps(
+        comps, SUBJECT, max_distance_miles=5.0, max_age_days=365, today=TODAY
+    )
+    assert len(kept) == 1

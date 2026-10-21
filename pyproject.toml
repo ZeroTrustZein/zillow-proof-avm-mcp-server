@@ -23,6 +23,7 @@ zillow-proof-avm-mcp = "zillow_proof_avm_mcp.cli:cli"
 dev = [
     "pytest>=7.4.0",
     "pytest-asyncio>=0.21.0",
+    "pytest-cov>=4.1.0",
     "ruff>=0.1.0",
 ]
 
