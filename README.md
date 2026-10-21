@@ -5,10 +5,12 @@ to Zestimate scrutiny: transparent comps, adjustment grids, and a confidence ban
 
 ## Status
 
-Stage 7 — refactor. Selection defaults live in one place (`valuation.DEFAULT_*`, imported by the
-CLI so flags cannot drift from the engine); beds/baths share one adjustment formula; timestamps are
-UTC-aware. 60 tests across models, geo, sources, engine, CLI, config, and server; coverage 99% of
-`src/`. CI runs `ruff check .` plus `pytest --cov`.
+Stage 8 — CI. Same matrix (3.10/3.11/3.12), plus: concurrent runs on a branch cancel,
+coverage floor enforced at 95% (`--cov-fail-under`), and a packaging smoke test that runs the
+installed `zillow-proof-avm tools` entry point. Selected defaults live in one place
+(`valuation.DEFAULT_*`, imported by the CLI so flags cannot drift from the engine); beds/baths share
+one adjustment formula; timestamps are UTC-aware. 60 tests across models, geo, sources, engine, CLI,
+config, and server; coverage 99% of `src/`.
 
 ## Install
 
