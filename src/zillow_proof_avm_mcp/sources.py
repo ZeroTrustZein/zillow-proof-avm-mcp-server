@@ -54,7 +54,7 @@ class JsonCompSource:
         self.path = Path(path)
 
     def comps_for(self, subject: SubjectProperty) -> list[Comp]:
-        data = json.loads(self.path.read_text(encoding="utf-8"))
+        data = json.loads(self.path.read_text(encoding="utf-8-sig"))
         records = data["comps"] if isinstance(data, dict) else data
         return [comp_from_record(subject, record) for record in records]
 

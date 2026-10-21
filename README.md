@@ -5,11 +5,10 @@ to Zestimate scrutiny: transparent comps, adjustment grids, and a confidence ban
 
 ## Status
 
-Stage 4 — subsystems. `geo.py` derives great-circle comp distance from coordinates;
-`sources.py` is the comp-access layer (`CompSource` protocol, in-memory and JSON-file
-sources, distance back-filled from lat/lon when a record omits it). `valuation.py` is the
-sales-comparison engine: comp filtering, line-item adjustment grid, proximity/recency
-weighting, and a dispersion-driven confidence band. MCP tools land in later stages.
+Stage 5 — CLI/interface. `valuate` runs the whole pipeline from the shell: subject flags
+plus a comps JSON file (or `ZPAVM_COMPS_FILE`), human summary by default, `--json` for the
+full `Valuation`. `geo.py`, `sources.py`, and `valuation.py` are unchanged from stage 4.
+MCP tools land in later stages.
 
 ## Install
 
@@ -23,6 +22,8 @@ pip install -e ".[dev]"
 ```bash
 zillow-proof-avm tools     # list registered tools
 zillow-proof-avm serve     # stdio MCP server
+zillow-proof-avm valuate --street "1 Main St" --city Austin --state TX --zip 78704 \
+  --beds 3 --baths 2 --sqft 2000 --comps comps.json        # add --json for raw output
 ```
 
 ## Configure
